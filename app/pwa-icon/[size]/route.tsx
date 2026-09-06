@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import { AppIconMark } from "@/lib/app-icon";
 
 export const runtime = "nodejs";
+export const dynamic = "force-static";
+export const revalidate = false;
 
 const ALLOWED = new Set([192, 512]);
 

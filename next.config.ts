@@ -10,6 +10,8 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  output: "export",
+  images: { unoptimized: true },
   reactStrictMode: true,
   async headers() {
     return [
