@@ -5,6 +5,7 @@ import {
   GRID_SIZE,
 } from "@/lib/constants";
 import { snapToGrid } from "@/lib/geometry";
+import { createId } from "@/lib/id";
 import type { Note, Viewport } from "@/lib/types";
 
 export const MARKDOWN_SYNTAX_MARKDOWN = `# A little cheat sheet
@@ -102,7 +103,7 @@ export function createMarkdownSyntaxNote(
 ): Note {
   const now = Date.now();
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     x: extras?.x ?? snapToGrid(viewport.x + GRID_SIZE * 3),
     y: extras?.y ?? snapToGrid(viewport.y + GRID_SIZE * 3),
     width: DEFAULT_NOTE_WIDTH,

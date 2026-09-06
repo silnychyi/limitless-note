@@ -7,6 +7,7 @@ import { resolveOverlaps as placeWithoutOverlaps } from "@/lib/collision";
 import { screenToWorld } from "@/lib/coords";
 import { emptyWorkspace, loadWorkspace, saveWorkspace } from "@/lib/db";
 import { clampZoom, snapToGrid } from "@/lib/geometry";
+import { createId } from "@/lib/id";
 import { createMarkdownSyntaxNote } from "@/lib/markdown-syntax-note";
 import { createStarterNotes } from "@/lib/sample-note";
 import type { Note, Viewport, Workspace } from "@/lib/types";
@@ -84,7 +85,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       y: viewport.y + 120,
     };
     const now = Date.now();
-    const id = crypto.randomUUID();
+    const id = createId();
 
     const note: Note = {
       id,

@@ -1,6 +1,16 @@
+/// <reference no-default-lib="true" />
+/// <reference lib="esnext" />
 /// <reference lib="webworker" />
 
-declare const self: ServiceWorkerGlobalScope;
+import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
+
+declare global {
+  interface WorkerGlobalScope extends SerwistGlobalConfig {
+    __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
+  }
+}
+
+void self.__SW_MANIFEST;
 
 async function forgetCaches() {
   const keys = await caches.keys();

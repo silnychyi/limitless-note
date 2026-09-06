@@ -4,6 +4,7 @@ import {
   GRID_SIZE,
 } from "@/lib/constants";
 import { snapToGrid } from "@/lib/geometry";
+import { createId } from "@/lib/id";
 import {
   createMarkdownSyntaxNote,
   placeBeside,
@@ -20,7 +21,7 @@ If two notes pile on top of each other, the others politely slide out of the way
 
 ## Getting around
 
-Drag the empty space to look around. Scroll or use two fingers the same way. Hold **Ctrl** or **⌘** and scroll if you want to zoom in or out.
+Drag the empty space to look around. Pinch with two fingers to zoom. On a computer, scroll to pan, or hold **Ctrl** or **⌘** and scroll to zoom.
 
 ## Your notes stay here
 
@@ -34,7 +35,7 @@ That’s it. Put a thought somewhere and leave it there.
 export function createWelcomeNote(viewport: Viewport): Note {
   const now = Date.now();
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     x: snapToGrid(viewport.x + GRID_SIZE * 3),
     y: snapToGrid(viewport.y + GRID_SIZE * 3),
     width: DEFAULT_NOTE_WIDTH,

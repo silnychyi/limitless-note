@@ -20,6 +20,15 @@ type Pointer = {
   noteId: string | null;
 };
 
+type Point = { x: number; y: number };
+
+type PinchGesture = {
+  type: "pinch";
+  lastMidX: number;
+  lastMidY: number;
+  lastDistance: number;
+};
+
 type Gesture =
   | { type: "none" }
   | {
@@ -29,7 +38,7 @@ type Gesture =
       noteId: string | null;
     }
   | { type: "pan"; lastX: number; lastY: number }
-  | { type: "two-finger-pan"; lastMidX: number; lastMidY: number }
+  | PinchGesture
   | {
       type: "drag-note";
       noteId: string;
@@ -39,8 +48,46 @@ type Gesture =
       worldY: number;
     };
 
-function midpoint(a: Pointer, b: Pointer) {
+function midpoint(a: Point, b: Point) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
+function distance(a: Point, b: Point) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function touchPoint(touch: Touch): Point {
+  return { x: touch.clientX, y: touch.clientY };
+}
+
+function applyPinch(gesture: PinchGesture, a: Point, b: Point) {
+  const mid = midpoint(a, b);
+  const nextDistance = distance(a, b);
+  const { viewport, zoomAt, pan } = useCanvasStore.getState();
+
+  if (gesture.lastDistance > 8 && nextDistance > 8) {
+    zoomAt(
+      viewport.zoom * (nextDistance / gesture.lastDistance),
+      mid.x,
+      mid.y,
+    );
+  }
+
+  pan(mid.x - gesture.lastMidX, mid.y - gesture.lastMidY);
+  gesture.lastMidX = mid.x;
+  gesture.lastMidY = mid.y;
+  gesture.lastDistance = nextDistance;
+}
+
+function beginPinch(a: Point, b: Point): PinchGesture {
+  useCanvasStore.getState().setDraggingId(null);
+  const mid = midpoint(a, b);
+  return {
+    type: "pinch",
+    lastMidX: mid.x,
+    lastMidY: mid.y,
+    lastDistance: distance(a, b),
+  };
 }
 
 function noteIdFromTarget(target: EventTarget | null) {
@@ -82,6 +129,7 @@ export function InfiniteCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const pointersRef = useRef(new Map<number, Pointer>());
   const gestureRef = useRef<Gesture>({ type: "none" });
+  const pinchFromTouchRef = useRef(false);
   const [grabbing, setGrabbing] = useState(false);
   const viewport = useCanvasStore((state) => state.viewport);
 
@@ -103,21 +151,75 @@ export function InfiniteCanvas() {
       pan(-event.deltaX * scale, -event.deltaY * scale);
     };
 
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
-
-  const beginTwoFingerPan = () => {
-    const pointers = [...pointersRef.current.values()];
-    if (pointers.length < 2) return;
-    const mid = midpoint(pointers[0], pointers[1]);
-    useCanvasStore.getState().setDraggingId(null);
-    gestureRef.current = {
-      type: "two-finger-pan",
-      lastMidX: mid.x,
-      lastMidY: mid.y,
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length < 2) return;
+      event.preventDefault();
+      pinchFromTouchRef.current = true;
+      gestureRef.current = beginPinch(
+        touchPoint(event.touches[0]),
+        touchPoint(event.touches[1]),
+      );
+      setGrabbing(true);
     };
-  };
+
+    const onTouchMove = (event: TouchEvent) => {
+      if (event.touches.length < 2) return;
+      event.preventDefault();
+      pinchFromTouchRef.current = true;
+      if (gestureRef.current.type !== "pinch") {
+        gestureRef.current = beginPinch(
+          touchPoint(event.touches[0]),
+          touchPoint(event.touches[1]),
+        );
+      }
+      if (gestureRef.current.type !== "pinch") return;
+      applyPinch(
+        gestureRef.current,
+        touchPoint(event.touches[0]),
+        touchPoint(event.touches[1]),
+      );
+    };
+
+    const onTouchEnd = (event: TouchEvent) => {
+      if (event.touches.length >= 2) return;
+      pinchFromTouchRef.current = false;
+      if (gestureRef.current.type !== "pinch") return;
+      if (event.touches.length === 1) {
+        gestureRef.current = {
+          type: "pan",
+          lastX: event.touches[0].clientX,
+          lastY: event.touches[0].clientY,
+        };
+        return;
+      }
+      setGrabbing(false);
+      gestureRef.current = { type: "none" };
+    };
+
+    const blockBrowserGesture = (event: Event) => {
+      event.preventDefault();
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: false });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: false });
+    el.addEventListener("gesturestart", blockBrowserGesture);
+    el.addEventListener("gesturechange", blockBrowserGesture);
+    el.addEventListener("gestureend", blockBrowserGesture);
+
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+      el.removeEventListener("gesturestart", blockBrowserGesture);
+      el.removeEventListener("gesturechange", blockBrowserGesture);
+      el.removeEventListener("gestureend", blockBrowserGesture);
+    };
+  }, []);
 
   const finishEditingIfEmpty = () => {
     useCanvasStore.getState().commitEditing();
@@ -141,7 +243,8 @@ export function InfiniteCanvas() {
     });
 
     if (pointersRef.current.size >= 2) {
-      beginTwoFingerPan();
+      const pointers = [...pointersRef.current.values()];
+      gestureRef.current = beginPinch(pointers[0], pointers[1]);
       setGrabbing(true);
       return;
     }
@@ -165,21 +268,18 @@ export function InfiniteCanvas() {
     pointer.x = event.clientX;
     pointer.y = event.clientY;
 
+    if (gestureRef.current.type === "pinch" && pinchFromTouchRef.current) {
+      return;
+    }
+
     if (pointersRef.current.size >= 2) {
-      if (gestureRef.current.type !== "two-finger-pan") {
-        beginTwoFingerPan();
+      const pointers = [...pointersRef.current.values()];
+      if (gestureRef.current.type !== "pinch") {
+        gestureRef.current = beginPinch(pointers[0], pointers[1]);
         setGrabbing(true);
       }
-      const pointers = [...pointersRef.current.values()];
-      const mid = midpoint(pointers[0], pointers[1]);
-      const gesture = gestureRef.current;
-      if (gesture.type !== "two-finger-pan") return;
-
-      useCanvasStore
-        .getState()
-        .pan(mid.x - gesture.lastMidX, mid.y - gesture.lastMidY);
-      gesture.lastMidX = mid.x;
-      gesture.lastMidY = mid.y;
+      if (gestureRef.current.type !== "pinch") return;
+      applyPinch(gestureRef.current, pointers[0], pointers[1]);
       return;
     }
 
@@ -243,7 +343,7 @@ export function InfiniteCanvas() {
     const pointer = pointersRef.current.get(event.pointerId);
     pointersRef.current.delete(event.pointerId);
 
-    if (pointersRef.current.size === 1 && gestureRef.current.type === "two-finger-pan") {
+    if (pointersRef.current.size === 1 && gestureRef.current.type === "pinch") {
       const remaining = [...pointersRef.current.values()][0];
       gestureRef.current = { type: "pan", lastX: remaining.x, lastY: remaining.y };
       return;
