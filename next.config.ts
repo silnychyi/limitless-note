@@ -9,23 +9,29 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development",
 });
 
+const isStaticExport = Boolean(process.env.GITHUB_ACTIONS);
+
 const nextConfig: NextConfig = {
-  output: "export",
-  images: { unoptimized: true },
+  output: isStaticExport ? "export" : undefined,
+  images: isStaticExport ? { unoptimized: true } : undefined,
   reactStrictMode: true,
-  async headers() {
-    return [
-      {
-        source: "/sw.js",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "no-cache, no-store, must-revalidate",
-          },
-        ],
-      },
-    ];
-  },
+  ...(isStaticExport
+    ? {}
+    : {
+        async headers() {
+          return [
+            {
+              source: "/sw.js",
+              headers: [
+                {
+                  key: "Cache-Control",
+                  value: "no-cache, no-store, must-revalidate",
+                },
+              ],
+            },
+          ];
+        },
+      }),
 };
 
 export default withSerwist(nextConfig);

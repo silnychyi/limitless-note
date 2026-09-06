@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence } from "motion/react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { NoteCard } from "@/components/note-card";
 import { GRID_SIZE, POINTER_CLICK_THRESHOLD } from "@/lib/constants";
 import { screenToWorld } from "@/lib/coords";
@@ -103,11 +103,9 @@ const NotesLayer = memo(function NotesLayer() {
   const notes = useCanvasStore((state) => state.notes);
   const draggingId = useCanvasStore((state) => state.draggingId);
   const visible = getVisibleNotes(notes, useCanvasStore.getState().viewport);
-
-  const overlappingIds = useMemo(() => {
-    if (!draggingId) return new Set<string>();
-    return getOverlappingIds(notes, draggingId);
-  }, [draggingId, notes]);
+  const overlappingIds = draggingId
+    ? getOverlappingIds(notes, draggingId)
+    : new Set<string>();
 
   return (
     <AnimatePresence>
