@@ -1,0 +1,13 @@
+export const DEFAULT_NOTE_WIDTH = 300;
+export const DEFAULT_NOTE_HEIGHT = 160;
+export const CARD_MAX_HEIGHT = 220;
+export const CARD_PREVIEW_CHARS = 360;
+export const MIN_ZOOM = 0.1;
+export const MAX_ZOOM = 4;
+export const PERSIST_DEBOUNCE_MS = 400;
+export const POINTER_CLICK_THRESHOLD = 8;
+export const GRID_SIZE = 24;
+export const CARD_GAP = GRID_SIZE;
+export const COLLISION_MAX_RINGS = 320;
+export const A4_MAX_WIDTH = 720;
+export const A4_RATIO = 210 / 297;
