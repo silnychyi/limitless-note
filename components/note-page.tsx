@@ -26,13 +26,13 @@ export function NotePage() {
   }
 
   useEffect(() => {
-    if (!note || mode !== "write") return;
+    if (!editingId || mode !== "write") return;
     const el = textareaRef.current;
     if (!el) return;
     el.focus();
     const len = el.value.length;
     el.setSelectionRange(len, len);
-  }, [mode, note]);
+  }, [editingId, mode]);
 
   useEffect(() => {
     if (!editingId) return;
