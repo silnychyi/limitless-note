@@ -83,7 +83,9 @@ A link is the words in brackets, the address in parentheses:
 
 Or wrap an address in \`<\` \`>\` and it becomes a link on its own: <https://spec.commonmark.org>
 
-A picture is the same idea with a \`!\` in front: \`![a description](the-image.jpg)\`
+A picture is the same idea with a \`!\` in front:
+
+![Slava Ukraine](https://images.pexels.com/photos/11920129/pexels-photo-11920129.png)
 
 ## A small table
 
