@@ -16,20 +16,14 @@ export function NotePage() {
   const updateNote = useCanvasStore((state) => state.updateNote);
   const deleteNote = useCanvasStore((state) => state.deleteNote);
   const commitEditing = useCanvasStore((state) => state.commitEditing);
-  const [modeForId, setModeForId] = useState<{
-    id: string | null;
-    mode: "write" | "preview";
-  }>({ id: null, mode: "write" });
+  const [mode, setMode] = useState<"write" | "preview">("write");
+  const [openId, setOpenId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const mode =
-    editingId && modeForId.id === editingId
-      ? modeForId.mode
-      : note?.markdown.trim()
-        ? "preview"
-        : "write";
-  const setMode = (next: "write" | "preview") => {
-    setModeForId({ id: editingId, mode: next });
-  };
+
+  if (editingId !== openId) {
+    setOpenId(editingId);
+    setMode("write");
+  }
 
   useEffect(() => {
     if (!note || mode !== "write") return;
