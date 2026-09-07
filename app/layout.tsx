@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   title: APP_NAME,
   description: APP_DESCRIPTION,
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/limitless.svg", type: "image/svg+xml" }],
+    shortcut: "/limitless.svg",
+    apple: [{ url: "/limitless.svg", type: "image/svg+xml" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -3,6 +3,12 @@ import type { MetadataRoute } from "next";
 export const dynamic = "force-static";
 export const revalidate = false;
 
+const ICON = {
+  src: "/limitless.svg",
+  type: "image/svg+xml",
+  sizes: "any" as const,
+};
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Limitless Note",
@@ -16,36 +22,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "en",
     categories: ["productivity", "utilities"],
     icons: [
-      {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "any",
-      },
-      {
-        src: "/pwa-icon/192",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/pwa-icon/192",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "/pwa-icon/512",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/pwa-icon/512",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
+      { ...ICON, purpose: "any" },
+      { ...ICON, purpose: "maskable" },
     ],
   };
 }
