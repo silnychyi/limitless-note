@@ -107,7 +107,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  padding: 20px 24px 0;
+  padding: 20px 24px;
 }
 
 .note-page-editor,
@@ -115,23 +115,116 @@ button:disabled {
   flex: 1;
   min-height: 0;
   width: 100%;
-  padding: 36px 56px 56px;
-  overflow-y: auto;
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.7;
   color: #171717;
 }
 
-.note-page-editor {
-  resize: none;
-  background: transparent;
-  outline: none;
-  caret-color: #171717;
+.note-page-preview {
+  padding: 36px 48px 56px 56px;
+  overflow-y: auto;
 }
 
-.note-page-editor::placeholder {
+.note-page-editor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.note-page-editor.is-hidden {
+  display: none;
+}
+
+.note-page-input {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 36px 48px 56px 56px;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  caret-color: #171717;
+  overflow-y: auto;
+}
+
+.note-page-input::placeholder {
   color: #d4d4d4;
+}
+
+.md-hint-menu {
+  position: absolute;
+  z-index: 5;
+  min-width: 188px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 20, 0.06),
+    0 14px 32px rgba(20, 20, 20, 0.12);
+}
+
+.md-hint-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: transparent;
+  color: #171717;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.md-hint-item.is-active {
+  background: #f5f5f5;
+}
+
+.md-hint-item code {
+  color: #a3a3a3;
+  font-size: 12px;
+}
+
+.note-page-preview,
+.note-page-input {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 23, 23, 0.18) transparent;
+}
+
+.note-page-preview::-webkit-scrollbar,
+.note-page-input::-webkit-scrollbar {
+  width: 8px;
+}
+
+.note-page-preview::-webkit-scrollbar-track,
+.note-page-input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.note-page-preview::-webkit-scrollbar-thumb,
+.note-page-input::-webkit-scrollbar-thumb {
+  background: rgba(23, 23, 23, 0.16);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.note-page-preview::-webkit-scrollbar-thumb:hover,
+.note-page-input::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 23, 23, 0.28);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 .note-md {
@@ -298,8 +391,72 @@ button:disabled {
     padding: 16px 16px 0;
   }
 
-  .note-page-editor,
   .note-page-preview {
-    padding: 24px 28px 36px;
+    padding: 24px 20px 36px 28px;
   }
+
+  .note-page-input {
+    padding: 24px 20px 36px 28px;
+  }
+}
+
+.pdf-export-host {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}
+
+.pdf-measure {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+}
+
+.pdf-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 210mm;
+  height: 297mm;
+  box-sizing: border-box;
+  padding: 18mm 16mm 12mm;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.pdf-sheet-body,
+.pdf-measure-body {
+  width: 178mm;
+}
+
+.pdf-measure-body .note-md,
+.pdf-sheet .note-md {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.pdf-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pdf-sheet-number {
+  flex-shrink: 0;
+  margin: 8mm 0 0;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #a3a3a3;
+}
+
+.pdf-sheet .note-md img {
+  max-height: 210mm;
 }

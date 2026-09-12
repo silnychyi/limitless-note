@@ -1,11 +1,13 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { MarkdownBody } from "@/components/markdown-body";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { A4_MAX_WIDTH, A4_RATIO } from "@/lib/constants";
+import { downloadNotePdf } from "@/lib/download-note-pdf";
 import { useCanvasStore } from "@/store/use-canvas-store";
 
 export function NotePage() {
@@ -18,21 +20,12 @@ export function NotePage() {
   const commitEditing = useCanvasStore((state) => state.commitEditing);
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [openId, setOpenId] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [downloading, setDownloading] = useState(false);
 
   if (editingId !== openId) {
     setOpenId(editingId);
     setMode("write");
   }
-
-  useEffect(() => {
-    if (!editingId || mode !== "write") return;
-    const el = textareaRef.current;
-    if (!el) return;
-    el.focus();
-    const len = el.value.length;
-    el.setSelectionRange(len, len);
-  }, [editingId, mode]);
 
   useEffect(() => {
     if (!editingId) return;
@@ -91,6 +84,20 @@ export function NotePage() {
                 </ModeButton>
               </div>
               <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-label="Download PDF"
+                  disabled={downloading || !note.markdown.trim()}
+                  onClick={() => {
+                    setDownloading(true);
+                    void downloadNotePdf(note.markdown).finally(() => {
+                      setDownloading(false);
+                    });
+                  }}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-40"
+                >
+                  <Download size={14} strokeWidth={2} />
+                </button>
                 <ConfirmDelete
                   onConfirm={() => deleteNote(note.id)}
                   label="Delete note"
@@ -106,26 +113,23 @@ export function NotePage() {
               </div>
             </header>
 
-            {mode === "write" ? (
-              <textarea
-                ref={textareaRef}
-                value={note.markdown}
-                placeholder={"# Title\n\nWrite in Markdown…"}
-                spellCheck={false}
-                onChange={(event) => {
-                  updateNote(note.id, { markdown: event.target.value });
-                }}
-                className="note-page-editor"
-              />
-            ) : note.markdown.trim() ? (
-              <div className="note-page-preview">
-                <MarkdownBody markdown={note.markdown} />
-              </div>
-            ) : (
-              <p className="note-page-preview text-neutral-300">
-                Nothing to preview yet.
-              </p>
-            )}
+            <MarkdownEditor
+              noteId={note.id}
+              markdown={note.markdown}
+              active={mode === "write"}
+              onChange={(value) => updateNote(note.id, { markdown: value })}
+            />
+
+            {mode === "preview" &&
+              (note.markdown.trim() ? (
+                <div className="note-page-preview">
+                  <MarkdownBody markdown={note.markdown} />
+                </div>
+              ) : (
+                <p className="note-page-preview text-neutral-300">
+                  Nothing to preview yet.
+                </p>
+              ))}
           </motion.article>
         </motion.div>
       )}

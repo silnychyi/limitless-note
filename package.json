@@ -14,6 +14,8 @@
   "dependencies": {
     "@serwist/next": "^9.5.12",
     "dexie": "^4.2.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.544.0",
     "motion": "^12.23.12",
     "next": "^15.5.2",
