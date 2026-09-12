@@ -34,7 +34,9 @@ export function MarkdownEditor({
   const pendingSelection = useRef<{ start: number; end: number } | null>(null);
   const [menu, setMenu] = useState<HintMenu | null>(null);
 
-  menuRef.current = menu;
+  useLayoutEffect(() => {
+    menuRef.current = menu;
+  }, [menu]);
 
   useEffect(() => {
     if (!active) return;
