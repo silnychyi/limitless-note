@@ -44,6 +44,26 @@ export function MarkdownEditor({
   }, [noteId, active]);
 
   useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const syncBottomSpace = () => {
+      const styles = window.getComputedStyle(textarea);
+      const line = Number.parseFloat(styles.lineHeight) || 27;
+      const top = Number.parseFloat(styles.paddingTop) || 0;
+      textarea.style.paddingBottom = `${Math.max(
+        textarea.clientHeight - top - line * 3,
+        120,
+      )}px`;
+    };
+
+    syncBottomSpace();
+    const observer = new ResizeObserver(syncBottomSpace);
+    observer.observe(textarea);
+    return () => observer.disconnect();
+  }, [active]);
+
+  useLayoutEffect(() => {
     const selection = pendingSelection.current;
     const textarea = textareaRef.current;
     if (!selection || !textarea) return;
